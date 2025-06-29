@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business Intelligence Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+
+        .upload-section {
+            padding: 30px;
+            text-align: center;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .file-input-wrapper {
+            display: inline-block;
+            position: relative;
+            overflow: hidden;
+            background: rgba(255,255,255,0.2);
+            border: 2px dashed rgba(255,255,255,0.5);
+            border-radius: 15px;
+            padding: 40px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .file-input-wrapper:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        .file-input {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .file-input-label {
+            font-size: 1.2em;
+            font-weight: bold;
+            display: block;
+        }
+
+        .dashboard {
+            padding: 30px;
+            display: none;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .metric-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+
+        .metric-card.profit::before {
+            background: linear-gradient(90deg, #4facfe, #00f2fe);
+        }
+
+        .metric-card.cac::before {
+            background: linear-gradient(90deg, #43e97b, #38f9d7);
+        }
+
+        .metric-card.alerts::before {
+            background: linear-gradient(90deg, #fa709a, #fee140);
+        }
+
+        .metric-title {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .metric-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .metric-change {
+            font-size: 1em;
+            padding: 5px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            font-weight: 600;
+        }
+
+        .positive {
+            color: #16a085;
+            background: rgba(22, 160, 133, 0.1);
+        }
+
+        .negative {
+            color: #e74c3c;
+            background: rgba(231, 76, 60, 0.1);
+        }
+
+        .neutral {
+            color: #f39c12;
+            background: rgba(243, 156, 18, 0.1);
+        }
+
+        .alerts-section, .recommendations-section {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .section-title {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .alert-item, .recommendation-item {
+            padding: 15px 20px;
+            margin-bottom: 10px;
+            border-radius: 15px;
+            border-left: 4px solid;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .alert-item:hover, .recommendation-item:hover {
+            transform: translateX(10px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .alert-item {
+            background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%);
+            border-left-color: #e53e3e;
+            color: #c53030;
+        }
+
+        .recommendation-item {
+            background: linear-gradient(135deg, #f0fff4 0%, #c6f6d5 100%);
+            border-left-color: #38a169;
+            color: #2f855a;
+        }
+
+        .summary-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .summary-item {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .summary-item h3 {
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
+
+        .summary-item p {
+            opacity: 0.9;
+        }
+
+        .icon {
+            font-size: 1.5em;
+        }
+
+        .error-message {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px;
+            text-align: center;
+            display: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2em;
+            color: #667eea;
+        }
+
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #667eea;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.8s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .summary-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Business Intelligence Dashboard</h1>
+            <p>تحلیل داده‌های کسب‌وکار با هوش مصنوعی</p>
+        </div>
+
+        <div class="upload-section">
+            <div class="file-input-wrapper">
+                <input type="file" id="jsonFile" class="file-input" accept=".json">
+                <label for="jsonFile" class="file-input-label">
+                    📁 فایل JSON را انتخاب کنید
+                    <br><small>یا فایل را اینجا بکشید</small>
+                </label>
+            </div>
+        </div>
+
+        <div class="loading" id="loading">
+            در حال بارگذاری...
+        </div>
+
+        <div class="error-message" id="errorMessage"></div>
+
+        <div class="dashboard" id="dashboard">
+            <div class="metrics-grid">
+                <div class="metric-card profit">
+                    <div class="metric-title">
+                        <span class="icon">💰</span>
+                        سود/زیان روزانه
+                    </div>
+                    <div class="metric-value" id="profitValue">0</div>
+                    <div class="metric-change" id="profitStatus">-</div>
+                </div>
+
+                <div class="metric-card cac">
+                    <div class="metric-title">
+                        <span class="icon">🎯</span>
+                        هزینه جذب مشتری (CAC)
+                    </div>
+                    <div class="metric-value" id="cacValue">0</div>
+                    <div class="metric-change" id="cacChange">-</div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-title">
+                        <span class="icon">📈</span>
+                        تغییر درآمد
+                    </div>
+                    <div class="metric-value" id="revenueChange">0%</div>
+                    <div class="metric-change" id="revenueStatus">-</div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-title">
+                        <span class="icon">💸</span>
+                        تغییر هزینه
+                    </div>
+                    <div class="metric-value" id="costChange">0%</div>
+                    <div class="metric-change" id="costStatus">-</div>
+                </div>
+            </div>
+
+            <div class="alerts-section">
+                <div class="section-title">
+                    <span class="icon">⚠️</span>
+                    هشدارها
+                </div>
+                <div id="alertsList"></div>
+            </div>
+
+            <div class="recommendations-section">
+                <div class="section-title">
+                    <span class="icon">💡</span>
+                    توصیه‌ها
+                </div>
+                <div id="recommendationsList"></div>
+            </div>
+
+            <div class="summary-section">
+                <h2>خلاصه تحلیل</h2>
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <h3 id="totalAlerts">0</h3>
+                        <p>تعداد هشدارها</p>
+                    </div>
+                    <div class="summary-item">
+                        <h3 id="totalRecommendations">0</h3>
+                        <p>تعداد توصیه‌ها</p>
+                    </div>
+                    <div class="summary-item">
+                        <h3 id="analysisDate">-</h3>
+                        <p>تاریخ تحلیل</p>
+                    </div>
+                    <div class="summary-item">
+                        <h3 id="analysisTime">-</h3>
+                        <p>زمان تحلیل</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let jsonData = null;
+
+        // File input handling
+        const fileInput = document.getElementById('jsonFile');
+        const fileWrapper = document.querySelector('.file-input-wrapper');
+        const dashboard = document.getElementById('dashboard');
+        const loading = document.getElementById('loading');
+        const errorMessage = document.getElementById('errorMessage');
+
+        // File upload event
+        fileInput.addEventListener('change', handleFileUpload);
+
+        // Drag and drop functionality
+        fileWrapper.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            fileWrapper.style.background = 'rgba(255,255,255,0.4)';
+        });
+
+        fileWrapper.addEventListener('dragleave', () => {
+            fileWrapper.style.background = 'rgba(255,255,255,0.2)';
+        });
+
+        fileWrapper.addEventListener('drop', (e) => {
+            e.preventDefault();
+            fileWrapper.style.background = 'rgba(255,255,255,0.2)';
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                handleFile(file);
+            }
+        }
+
+        function handleFile(file) {
+            if (!file.name.endsWith('.json')) {
+                showError('لطفاً فایل JSON انتخاب کنید');
+                return;
+            }
+
+            loading.style.display = 'block';
+            errorMessage.style.display = 'none';
+            dashboard.style.display = 'none';
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    jsonData = JSON.parse(e.target.result);
+                    setTimeout(() => {
+                        displayDashboard(jsonData);
+                        loading.style.display = 'none';
+                    }, 1000);
+                } catch (error) {
+                    showError('خطا در خواندن فایل JSON: ' + error.message);
+                    loading.style.display = 'none';
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+            setTimeout(() => {
+                errorMessage.style.display = 'none';
+            }, 5000);
+        }
+
+        function displayDashboard(data) {
+            // Update profit/loss metrics
+            const profitStatus = data.profit_loss_status;
+            document.getElementById('profitValue').textContent = formatCurrency(profitStatus.daily_profit);
+            
+            const profitStatusEl = document.getElementById('profitStatus');
+            profitStatusEl.textContent = profitStatus.status === 'positive' ? 'سودآور' : 'زیان‌ده';
+            profitStatusEl.className = `metric-change ${profitStatus.status === 'positive' ? 'positive' : 'negative'}`;
+
+            // Update CAC metrics
+            const cacInfo = data.customer_acquisition;
+            document.getElementById('cacValue').textContent = formatCurrency(cacInfo.current_cac);
+            
+            const cacChangeEl = document.getElementById('cacChange');
+            const cacChangeText = cacInfo.cac_change_percent > 0 ? `+${cacInfo.cac_change_percent}%` : `${cacInfo.cac_change_percent}%`;
+            cacChangeEl.textContent = cacChangeText;
+            cacChangeEl.className = `metric-change ${cacInfo.cac_change_percent > 20 ? 'negative' : cacInfo.cac_change_percent > 0 ? 'neutral' : 'positive'}`;
+
+            // Update revenue change
+            const revenueChangeEl = document.getElementById('revenueChange');
+            const revenueStatusEl = document.getElementById('revenueStatus');
+            const revenueChange = profitStatus.revenue_change_percent;
+            
+            revenueChangeEl.textContent = `${revenueChange > 0 ? '+' : ''}${revenueChange}%`;
+            revenueStatusEl.textContent = revenueChange > 0 ? 'رشد' : revenueChange < 0 ? 'کاهش' : 'بدون تغییر';
+            revenueStatusEl.className = `metric-change ${revenueChange > 0 ? 'positive' : revenueChange < 0 ? 'negative' : 'neutral'}`;
+
+            // Update cost change
+            const costChangeEl = document.getElementById('costChange');
+            const costStatusEl = document.getElementById('costStatus');
+            const costChange = profitStatus.cost_change_percent;
+            
+            costChangeEl.textContent = `${costChange > 0 ? '+' : ''}${costChange}%`;
+            costStatusEl.textContent = costChange > 0 ? 'افزایش' : costChange < 0 ? 'کاهش' : 'بدون تغییر';
+            costStatusEl.className = `metric-change ${costChange > 0 ? 'negative' : costChange < 0 ? 'positive' : 'neutral'}`;
+
+            // Display alerts
+            const alertsList = document.getElementById('alertsList');
+            alertsList.innerHTML = '';
+            if (data.alerts && data.alerts.length > 0) {
+                data.alerts.forEach(alert => {
+                    const alertItem = document.createElement('div');
+                    alertItem.className = 'alert-item';
+                    alertItem.textContent = alert;
+                    alertsList.appendChild(alertItem);
+                });
+            } else {
+                alertsList.innerHTML = '<div class="alert-item">هیچ هشداری وجود ندارد</div>';
+            }
+
+            // Display recommendations
+            const recommendationsList = document.getElementById('recommendationsList');
+            recommendationsList.innerHTML = '';
+            if (data.recommendations && data.recommendations.length > 0) {
+                data.recommendations.forEach(rec => {
+                    const recItem = document.createElement('div');
+                    recItem.className = 'recommendation-item';
+                    recItem.textContent = rec;
+                    recommendationsList.appendChild(recItem);
+                });
+            } else {
+                recommendationsList.innerHTML = '<div class="recommendation-item">هیچ توصیه‌ای وجود ندارد</div>';
+            }
+
+            // Update summary
+            document.getElementById('totalAlerts').textContent = data.summary.total_alerts;
+            document.getElementById('totalRecommendations').textContent = data.summary.total_recommendations;
+            document.getElementById('analysisDate').textContent = data.summary.analysis_date || '-';
+            
+            // Format timestamp
+            if (data.analysis_timestamp) {
+                const date = new Date(data.analysis_timestamp);
+                document.getElementById('analysisTime').textContent = date.toLocaleTimeString('fa-IR');
+            }
+
+            // Show dashboard with animation
+            dashboard.style.display = 'block';
+            dashboard.classList.add('fade-in');
+        }
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('fa-IR', {
+                style: 'currency',
+                currency: 'IRR',
+                minimumFractionDigits: 0
+            }).format(amount);
+        }
+
+        // Auto-load default file if exists
+        window.addEventListener('load', () => {
+            // Try to load langgraph.json automatically
+            fetch('langgraph.json')
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    }
+                    throw new Error('فایل پیش‌فرض یافت نشد');
+                })
+                .then(data => {
+                    jsonData = data;
+                    displayDashboard(data);
+                })
+                .catch(error => {
+                    console.log('Auto-load failed:', error.message);
+                    // This is expected if file doesn't exist
+                });
+        });
+    </script>
+</body>
+</html>

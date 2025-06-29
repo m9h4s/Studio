@@ -1,0 +1,38 @@
+{
+  "analysis_timestamp": "2025-06-29T15:29:01.711632",
+  "profit_loss_status": {
+    "daily_profit": 2000,
+    "status": "positive",
+    "revenue_change_percent": 11.11,
+    "cost_change_percent": 20.0
+  },
+  "customer_acquisition": {
+    "current_cac": 60.0,
+    "previous_cac": 55.56,
+    "cac_change_percent": 8.0,
+    "cac_alert": false
+  },
+  "alerts": [
+    "💰 Costs increased significantly"
+  ],
+  "recommendations": [
+    "✅ Maintain current profitable operations",
+    "📈 Strong revenue growth detected - consider increasing advertising budget",
+    "Review and optimize cost structure",
+    "🎯 Business is growing profitably - consider scaling operations"
+  ],
+  "summary": {
+    "total_alerts": 1,
+    "total_recommendations": 4,
+    "analysis_date": "2025-06-29",
+    "agent_version": "1.0.0"
+  },
+  "input_data": {
+    "daily_revenue": 5000,
+    "daily_cost": 3000,
+    "number_of_customers": 50,
+    "previous_day_revenue": 4500,
+    "previous_day_cost": 2500,
+    "previous_day_customers": 45
+  }
+}
